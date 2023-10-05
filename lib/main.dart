@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:device_preview/device_preview.dart';
 
 void main() => runApp(MyApp());
 
@@ -24,6 +25,7 @@ class BookVehiclePage extends StatefulWidget {
 }
 
 class _BookVehiclePageState extends State<BookVehiclePage> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   Color myColor = Color(0xFF29a4b6);
   Color myColor2 = Color(0xFF171749);
 
@@ -35,6 +37,10 @@ class _BookVehiclePageState extends State<BookVehiclePage> {
   TextEditingController emailController = TextEditingController();
   TextEditingController promoController = TextEditingController();
    // Define a variable for the text
+
+  bool isNumeric(String value) {
+    return int.tryParse(value) != null;
+  }
   String textInsideBox = "...";
   late DateTime startDate;
   late DateTime minDate;
@@ -117,7 +123,7 @@ class _BookVehiclePageState extends State<BookVehiclePage> {
                     },
                     controller: startController,
                     decoration: InputDecoration(
-                      labelText: "Current Location",
+                      hintText: "Current Location",
                       border: OutlineInputBorder(),
                       filled: true, // Set to true to fill the background
                       fillColor: Colors.white.withOpacity(0.7), // Set white with opacity// Add this line to specify the border
@@ -132,7 +138,7 @@ class _BookVehiclePageState extends State<BookVehiclePage> {
                     },
                     controller: endController,
                     decoration: InputDecoration(
-                      labelText: "Destination",
+                      hintText: "Destination",
                       border: OutlineInputBorder(),
                       filled: true, // Set to true to fill the background
                         fillColor: Colors.white.withOpacity(0.7),
@@ -235,63 +241,108 @@ class _BookVehiclePageState extends State<BookVehiclePage> {
                       ],
                     ),
                   ),
-                  Visibility(
+              Form(
+                key: _formKey, // Associate the form key with the Form widget
+                child:Visibility(
                     visible: showPersonalDetails,
                     child: Column(
+
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         SizedBox(height: 9.0),
-                        TextField(
+                        TextFormField(
                           controller: nameController,
                           decoration: InputDecoration(
-                            labelText: "Name",
+                            hintText: "Name",
                             border: OutlineInputBorder(),
-                            filled: true, // Set to true to fill the background
-                              fillColor: Colors.white.withOpacity(0.7),
+                            filled: true,
+                            fillColor: Colors.white.withOpacity(0.7),
                           ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your name';
+                            }
+                            // Define a regular expression pattern for alphabetic characters and spaces
+                            final namePattern = r'^[a-zA-Z\s]+$';
+                            final regExp = RegExp(namePattern);
+                            if (!regExp.hasMatch(value)) {
+                              return 'Invalid characters in the name';
+                            }
+                            return null; // Return null for no validation error
+                          },
                         ),
                         SizedBox(height: 9.0),
-                        TextField(
+                        TextFormField(
                           controller: telNoController,
+                          maxLength: 10, // Set the maximum length to 10 digits
+                          keyboardType: TextInputType.phone, // Use phone keyboard type for numeric input
                           decoration: InputDecoration(
-                            labelText: "Phone Number",
+                            hintText: "Phone Number",
                             border: OutlineInputBorder(),
-                            filled: true, // Set to true to fill the background
+                            filled: true,
                             fillColor: Colors.white.withOpacity(0.7),
+                            counterText: "", // Remove the default character counter
                           ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a phone number';
+                            }
+                            if (value.length != 10 || !value.startsWith("0") || !isNumeric(value)) {
+                              return 'Invalid phone number';
+                            }
+                            return null; // Return null for no validation error
+                          },
                         ),
                         SizedBox(height: 9.0),
-                        TextField(
+                        TextFormField(
                           controller: emailController,
+                          keyboardType: TextInputType.emailAddress, // Use email keyboard type
                           decoration: InputDecoration(
-                            labelText: "Email",
+                            hintText: "Email",
                             border: OutlineInputBorder(),
-                            filled: true, // Set to true to fill the background
+                            filled: true,
                             fillColor: Colors.white.withOpacity(0.7),
                           ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter an email address';
+                            }
+                            // Define a regular expression pattern for email validation
+                            final emailPattern =
+                                r'^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$';
+                            final regExp = RegExp(emailPattern);
+                            if (!regExp.hasMatch(value)) {
+                              return 'Invalid email address';
+                            }
+                            return null; // Return null for no validation error
+                          },
                         ),
                         SizedBox(height: 18.0),
                         ElevatedButton(
                           onPressed: () {
-                            reserveDriver();
+                            // Validate the form before calling reserveDriver
+                            if (_formKey.currentState != null && _formKey.currentState!.validate()) {
+                              reserveDriver();
+                            }
                           },
                           style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all<Color>(
-                                Color(0xFFf1c40f)), // Change the color to your desired background color
+                            backgroundColor:
+                            MaterialStateProperty.all<Color>(Color(0xFFf1c40f)),
                           ),
                           child: Padding(
-                            padding: EdgeInsets.all(12.0), // Adjust the padding as needed
+                            padding: EdgeInsets.all(12.0),
                             child: Text(
                               "Reserve Your Driver",
                               style: TextStyle(
-                                  fontSize: 20.0,
-                                  color: Colors.black // Adjust the font size as needed
+                                fontSize: 20.0,
+                                color: Colors.black,
                               ),
                             ),
                           ),
                         ),
                       ],
-                    ),
+                    )
+                   ),
                   ),
                 ],
               ),
@@ -382,16 +433,16 @@ class _BookVehiclePageState extends State<BookVehiclePage> {
 
 
             } else {
-              showToast("Failed to calculate cost");
+              warningshowToast("Failed to calculate cost");
             }
           } else {
-            showToast("Failed to fetch distance information");
+            warningshowToast("Failed to fetch distance information");
           }
         } else {
-          showToast("Failed to fetch distance information");
+          warningshowToast("Failed to fetch distance information");
         }
       } catch (e) {
-        showToast("Error occurred while calculating estimate");
+        warningshowToast("Error occurred while calculating estimate");
       } finally {
         showSpinner(false, true); // Hide loading dialog with progress indicator
       }
@@ -414,18 +465,18 @@ class _BookVehiclePageState extends State<BookVehiclePage> {
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
           if(data['result'] == 1){
-            showToast("Something went wrong while saving the trip.");
+            warningshowToast("Something went wrong while saving the trip.");
           }else if(data['result'] == 0 ){
             showToast("Trip Saved Successfully.");
           }else{
-            showToast("Failed to reserve driver");
+            warningshowToast("Failed to reserve driver");
           }
           showMessage(data['result']);
         } else {
-          showToast("Failed to reserve driver");
+          warningshowToast("Failed to reserve driver");
         }
       } catch (e) {
-        showToast("Error occurred while reserving driver");
+        warningshowToast("Error occurred while reserving driver");
       } finally {
         showSpinner(false, true); // Hide loading dialog with progress indicator
       }
@@ -445,25 +496,37 @@ class _BookVehiclePageState extends State<BookVehiclePage> {
     switch (result) {
       case 0:
         message = "Thank you for submitting your information.";
+
         startController.clear();
         endController.clear();
         promoController.clear();
         nameController.clear();
         telNoController.clear();
         emailController.clear();
-        break;
+        textInsideBox = "...";
+        showToast(message);
+
+        setState(() {
+             textInsideBox = "...";
+        });
+    // Handle other cases if needed
+    break;
+
       case 1:
         message =
         "Sorry, there has been an issue with our system. Please try again later.";
+        warningshowToast(message);
         break;
       case 2:
         message = "Please fill all required fields.";
+        warningshowToast(message);
         break;
       case 3:
         message = "Sorry, our drivers are not available at the moment.";
+        warningshowToast(message);
         break;
     }
-    showToast(message);
+
   }
 
   void showToast(String message) {
@@ -471,6 +534,21 @@ class _BookVehiclePageState extends State<BookVehiclePage> {
       msg: message,
       toastLength: Toast.LENGTH_LONG,
       gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 5,
+        backgroundColor: Color(0xFFf1c40f),
+        textColor: Colors.black,
+        fontSize: 18.0
+    );
+  }
+  void warningshowToast(String message) {
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 5,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 18.0
     );
   }
 
