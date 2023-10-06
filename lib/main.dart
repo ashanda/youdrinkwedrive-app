@@ -79,23 +79,13 @@ class _BookVehiclePageState extends State<BookVehiclePage> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          elevation: 0.0,
-          flexibleSpace: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [myColor, myColor2], // Set your gradient colors here
-              ),
-            ),
-            child: Center(
-              child: Container(
-                width: double.infinity, // Makes the container take up the full width of the AppBar
-                height: kToolbarHeight, // Sets the height to match the AppBar's height
-                child: Image.asset('assets/images/app_head.png'),
-              ),
-            ),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(kToolbarHeight),
+          child: AppBar(
+            elevation: 0.0,
+            backgroundColor: Color(0xFFf1c40f),
+            centerTitle: true,
+            title: Image.asset('assets/images/app_head.png'),
           ),
         ),
         backgroundColor: Colors.transparent, // Make the background of Scaffold transparent
@@ -178,7 +168,7 @@ class _BookVehiclePageState extends State<BookVehiclePage> {
                   TextField(
                     controller: promoController,
                     decoration: InputDecoration(
-                      labelText: "Promo Code (if any)",
+                      hintText: "Promo Code (if any)",
                       border: OutlineInputBorder(),
                       filled: true, // Set to true to fill the background
                       fillColor: Colors.white.withOpacity(0.7),
