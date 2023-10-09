@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:device_preview/device_preview.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() => runApp(MyApp());
 
@@ -21,10 +22,12 @@ class MyApp extends StatelessWidget {
 
 class BookVehiclePage extends StatefulWidget {
   @override
+
   _BookVehiclePageState createState() => _BookVehiclePageState();
 }
 
 class _BookVehiclePageState extends State<BookVehiclePage> {
+  final String phoneNumber = 'tel:0777400040';
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   Color myColor = Color(0xFF29a4b6);
   Color myColor2 = Color(0xFF171749);
@@ -334,12 +337,24 @@ class _BookVehiclePageState extends State<BookVehiclePage> {
                     )
                    ),
                   ),
+
                 ],
               ),
             ),
           ),
                 ],
         ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            _makePhoneCall(phoneNumber);
+          },
+          child: Image.asset(
+            'assets/images/customersupport.png', // Replace with the path to your image
+            width: 56.0, // Adjust the width as needed
+            height: 56.0, // Adjust the height as needed
+          ),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // Adjust this as neede
         ),
     );
   }
@@ -565,6 +580,16 @@ class _BookVehiclePageState extends State<BookVehiclePage> {
       }
     }
   }
+
+  // Function to make the phone call
+  _makePhoneCall(String phoneNumber) async {
+    if (await canLaunch(phoneNumber)) {
+      await launch(phoneNumber);
+    } else {
+      print('Could not launch $phoneNumber');
+    }
+  }
+
 
   void showSpinner(bool show, bool modal) {
     // Implement your loading dialog (spinner) here
